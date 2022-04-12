@@ -53,6 +53,7 @@ int main() {
   bool* dansS = malloc(cities->number*sizeof(bool));
   int*  voisin = malloc(cities->number*sizeof(int));
   float*  dist = malloc(cities->number*sizeof(float));
+  voisin[0] = 0;
   dansS[0] = true;
   int sizeS = 1;
   // Initialisation //
@@ -92,7 +93,7 @@ int main() {
 
   FILE* fileOut = NULL;
   fileOut = fopen("resuGraph.dat", "w");
-  for(int i=0; i<cities->number; i++){
+  for(int i=1; i<cities->number; i++){
     fprintf(fileOut, "%i %i\n", i, voisin[i]);
     /*for(int j=0; j<i; j++){
       fprintf(fileOut, "%i %i\n", i, j);
