@@ -56,23 +56,23 @@ int main() {
   dansS[0] = true;
   int sizeS = 1;
   // Initialisation //
-  for(int i=1; i<size->number; i++){
+  for(int i=1; i<cities->number; i++){
     dansS[i] = false;
     voisin[i] = 0;
     dist[i] = distance(cities->lon[0], cities->lat[0],cities->lon[i], cities->lat[i]);
   }
 
   // Itérations //
-  while(sizeS < size->number-1){
+  while(sizeS < cities->number-1){
     int index;
-    float dist = FLT_MAX;
-    for(int i=1; i<size->number; i++){
-      if(dansS[i]==false && dist[i]<dist){
+    float distM = FLT_MAX;
+    for(int i=1; i<cities->number; i++){
+      if(dansS[i]==false && dist[i]<distM){
         index = i;
-        dist = dist[i];
+        distM = dist[i];
       }
     }
-    
+
     sizeS++;
   }
 
