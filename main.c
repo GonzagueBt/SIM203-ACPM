@@ -72,7 +72,14 @@ int main() {
         distM = dist[i];
       }
     }
-
+    dansS[index] = true;
+    for(int j=1; j<cities->number; j++){
+      distM = distance(cities->lon[index], cities->lat[index],cities->lon[j], cities->lat[j]);
+      if(dansS[j]==false && dist[j]> distM){
+        dist[j]= distM;
+        voisin[j] = index;
+      }
+    }
     sizeS++;
   }
 
@@ -86,9 +93,10 @@ int main() {
   FILE* fileOut = NULL;
   fileOut = fopen("resuGraph.dat", "w");
   for(int i=0; i<cities->number; i++){
-    for(int j=0; j<i; j++){
+    fprintf(fileOut, "%i %i\n", i, voisin[i]);
+    /*for(int j=0; j<i; j++){
       fprintf(fileOut, "%i %i\n", i, j);
-    }
+    }*/
   }
   fclose(fileOut);
 
