@@ -4,6 +4,7 @@
 //   ./a.out
 
 #include "citiesReader.h"
+#include "main.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -15,20 +16,18 @@
   #define R 6378
 #endif
 
+#ifndef M_PI
+  #define M_PI 3.14159265359
+#endif
+
 float distance(float v1lon,float v1lat, float v2lon, float v2lat){
-  return R*acosf(sinf(v1lat)*sinf(v2lat) + cosf(v1lon - v2lon)*cosf(v1lat)*cosf(v2lat));
   
-  /*float x = (v2lon - v1lon)*cosf((v1lat+v2lat)/2);
+  return R*acosf(sinf(v1lat*(M_PI/180))*sinf(v2lat*(M_PI/180)) + cosf(v1lon*(M_PI/180) - v2lon*(M_PI/180))*cosf(v1lat*(M_PI/180))*cosf(v2lat*(M_PI/180)));
+  /*
+  float x = (v2lon - v1lon)*cosf((v1lat+v2lat)/2);
   float y = v1lat - v2lat;
   float z = sqrtf(powf(x,2) + powf(y,2));
   return 1852* 60*z;*/
-}
-
-bool dansS(int size, char** S, char * name){
-  for(int i=0; i<size; i++){
-     if(strcmp(S[i],name) == 0) return true;
-  }
-  return false;
 }
 
 
@@ -71,7 +70,7 @@ int main() {
 
   int* voisin;
   if(isDep){
-    voisin = maxbyDep(cities);
+    ListOfCities* citiesDep = maxbyDep(cities);
   }
   else voisin  = Prim(cities);
 
@@ -110,6 +109,7 @@ int* Prim(ListOfCities* cities){
     dansS[i] = false;
     voisin[i] = 0;
     dist[i] = distance(cities->lon[0], cities->lat[0],cities->lon[i], cities->lat[i]);
+    printf("distance entre Nice et %s : %f\n", cities->name[i], dist[i]);
   }
 
   // Itérations //
@@ -137,6 +137,7 @@ int* Prim(ListOfCities* cities){
   free(dist);
   return voisin;
 }
+
 
 void citiesWriter(const char* write, int* voisin, int number){
   FILE* fileOut = NULL;
