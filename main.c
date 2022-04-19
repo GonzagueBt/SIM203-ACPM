@@ -4,7 +4,6 @@
 //   ./a.out
 
 #include "citiesReader.h"
-
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -17,7 +16,12 @@
 #endif
 
 float distance(float v1lon,float v1lat, float v2lon, float v2lat){
-  return R*acos(sin(v1lat)*sin(v2lat) + cos(v1lon - v2lon)*cos(v1lat)*cos(v2lat));
+  return R*acosf(sinf(v1lat)*sinf(v2lat) + cosf(v1lon - v2lon)*cosf(v1lat)*cosf(v2lat));
+  
+  /*float x = (v2lon - v1lon)*cosf((v1lat+v2lat)/2);
+  float y = v1lat - v2lat;
+  float z = sqrtf(powf(x,2) + powf(y,2));
+  return 1852* 60*z;*/
 }
 
 bool dansS(int size, char** S, char * name){
@@ -27,6 +31,7 @@ bool dansS(int size, char** S, char * name){
   return false;
 }
 
+
 int main() {
 
 //-----------------------------------------------------------------
@@ -34,8 +39,22 @@ int main() {
 //-----------------------------------------------------------------
 
   int popMin;
+  int dep;
+  bool isDep;
+  char* write = "w";
   printf("Minimal population? ");
   scanf("%i", &popMin);
+  printf("By Departement ?(yes=0/n=1) ");
+  scanf("%i", &dep);
+
+  if(dep==0){
+    isDep=true;
+    write = "a";
+    FILE* fileOut = NULL;
+    fileOut = fopen("resuGraph.dat", "w");
+    fclose(fileOut);
+  }
+  else isDep=false;
 
   ListOfCities* cities;
   cities = citiesReader(popMin);
@@ -49,12 +68,42 @@ int main() {
 //--- COMPUTING graph
 //-----------------------------------------------------------------
 
+
+  int* voisin;
+  if(isDep){
+    voisin = maxbyDep(cities);
+  }
+  else voisin  = Prim(cities);
+
+
+
+  // Écriture du graphe (chaque ligne correspond à une arête)
+  // !!! Ci-dessous, on écrit le graphe complet pour l'exemple
+  // !!! Vous devez modifier cette commande pour écrire le graphe obtenu avec Prim
+
+
+  citiesWriter(write, voisin,cities->number);
+
+//-----------------------------------------------------------------
+//--- DEALLOCATE arrays
+//-----------------------------------------------------------------
+
+  free(cities->name);
+  free(cities->pop);
+  free(cities->lon);
+  free(cities->lat);
+  free(cities);
+
+  return 0;
+}
+
+int* Prim(ListOfCities* cities){
   // variables //
   bool* dansS = malloc(cities->number*sizeof(bool));
   int*  voisin = malloc(cities->number*sizeof(int));
   float*  dist = malloc(cities->number*sizeof(float));
-  voisin[0] = 0;
   dansS[0] = true;
+  dist[0] = 0;
   int sizeS = 1;
   // Initialisation //
   for(int i=1; i<cities->number; i++){
@@ -74,7 +123,8 @@ int main() {
       }
     }
     dansS[index] = true;
-    for(int j=1; j<cities->number; j++){
+    for(int j=0; j<cities->number; j++){
+      if(j==index) continue;
       distM = distance(cities->lon[index], cities->lat[index],cities->lon[j], cities->lat[j]);
       if(dansS[j]==false && dist[j]> distM){
         dist[j]= distM;
@@ -83,33 +133,42 @@ int main() {
     }
     sizeS++;
   }
+  free(dansS);
+  free(dist);
+  return voisin;
+}
 
-
-
-  // Écriture du graphe (chaque ligne correspond à une arête)
-  // !!! Ci-dessous, on écrit le graphe complet pour l'exemple
-  // !!! Vous devez modifier cette commande pour écrire le graphe obtenu avec Prim
-
-
+void citiesWriter(const char* write, int* voisin, int number){
   FILE* fileOut = NULL;
-  fileOut = fopen("resuGraph.dat", "w");
-  for(int i=1; i<cities->number; i++){
+  fileOut = fopen("resuGraph.dat", write);
+  for(int i=1; i<number; i++){
     fprintf(fileOut, "%i %i\n", i, voisin[i]);
     /*for(int j=0; j<i; j++){
       fprintf(fileOut, "%i %i\n", i, j);
     }*/
   }
   fclose(fileOut);
+}
 
-//-----------------------------------------------------------------
-//--- DEALLOCATE arrays
-//-----------------------------------------------------------------
 
-  free(cities->name);
-  free(cities->pop);
-  free(cities->lon);
-  free(cities->lat);
-  free(cities);
-
-  return 0;
+ListOfCities* maxbyDep(ListOfCities* cities){
+  ListOfCities* citiesDep = malloc(95*sizeof(ListOfCities));
+  int dep = cities->dep[0];
+  citiesDep[0] = cities[0];
+  int cpt = 0;
+  for(int i=0; i< cities->number; i++){
+    if(dep != cities->dep[i]){
+      dep = cities->dep[i];
+      citiesDep[cpt] = cities[i];
+      cpt++;
+      printf("%i\n",cpt);
+    }
+    else if(cities->pop[i]> citiesDep->pop[dep]){
+      citiesDep[cpt] = cities[i];
+    }
+  }
+  for(int i=0; i<95; i++){
+    printf("%i %s %i %f %f\n", cities->dep[i], cities->name[i], cities->pop[i], cities->lon[i], cities->lat[i]);
+  }
+  return citiesDep;
 }
