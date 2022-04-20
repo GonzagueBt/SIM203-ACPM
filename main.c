@@ -2,6 +2,8 @@
 //   icc -std=c99 main.c citiesReader.c
 // Execution:
 //   ./a.out
+// Visualisation:
+// python visualisation.py
 
 #include "citiesReader.h"
 #include "main.h"
@@ -43,7 +45,7 @@ int main() {
   char* write = "w";
   printf("Minimal population? ");
   scanf("%i", &popMin);
-  printf("By Departement ?(yes=0/n=1) ");
+  printf("By Departement ?(yes=0/no=1) ");
   scanf("%i", &dep);
 
   if(dep==0){
@@ -58,10 +60,12 @@ int main() {
   ListOfCities* cities;
   cities = citiesReader(popMin);
 
+  /*
   // ... just to check! This line can be removed.
   for(int i=0; i<cities->number; i++){
     printf("%i %s %i %f %f\n", cities->dep[i], cities->name[i], cities->pop[i], cities->lon[i], cities->lat[i]);
   }
+  */
 
 //-----------------------------------------------------------------
 //--- COMPUTING graph
@@ -81,7 +85,9 @@ int main() {
   // !!! Vous devez modifier cette commande pour écrire le graphe obtenu avec Prim
 
 
-  citiesWriter(write, voisin,cities->number);
+  citiesWriter(write, voisin, cities->number);
+
+  printf("taille du réseau : %f\n", network_size(cities, voisin, cities->number));
 
 //-----------------------------------------------------------------
 //--- DEALLOCATE arrays
@@ -96,6 +102,8 @@ int main() {
   return 0;
 }
 
+
+
 int* Prim(ListOfCities* cities){
   // variables //
   bool* dansS = malloc(cities->number*sizeof(bool));
@@ -103,13 +111,14 @@ int* Prim(ListOfCities* cities){
   float*  dist = malloc(cities->number*sizeof(float));
   dansS[0] = true;
   dist[0] = 0;
+
   int sizeS = 1;
   // Initialisation //
   for(int i=1; i<cities->number; i++){
     dansS[i] = false;
     voisin[i] = 0;
     dist[i] = distance(cities->lon[0], cities->lat[0],cities->lon[i], cities->lat[i]);
-    printf("distance entre Nice et %s : %f\n", cities->name[i], dist[i]);
+    printf("distance entre Nice et %s : %f km\n", cities->name[i], dist[i]);
   }
 
   // Itérations //
@@ -125,7 +134,7 @@ int* Prim(ListOfCities* cities){
     dansS[index] = true;
     for(int j=0; j<cities->number; j++){
       if(j==index) continue;
-      distM = distance(cities->lon[index], cities->lat[index],cities->lon[j], cities->lat[j]);
+      distM = distance(cities->lon[index], cities->lat[index], cities->lon[j], cities->lat[j]);
       if(dansS[j]==false && dist[j]> distM){
         dist[j]= distM;
         voisin[j] = index;
@@ -152,7 +161,20 @@ void citiesWriter(const char* write, int* voisin, int number){
 }
 
 
+float network_size(ListOfCities* cities, int* voisin, int n){
+  float S=0.0;
+  int v;
+  for(int k=1; k<n; k++){
+    v=voisin[k];
+    S+=distance(cities->lon[k], cities->lat[k], cities->lon[v], cities->lat[v]);
+  }
+  return S;
+}
+
+
+
 ListOfCities* maxbyDep(ListOfCities* cities){
+  /*
   ListOfCities* citiesDep = malloc(95*sizeof(ListOfCities));
   int dep = cities->dep[0];
   citiesDep[0] = cities[0];
@@ -172,4 +194,6 @@ ListOfCities* maxbyDep(ListOfCities* cities){
     printf("%i %s %i %f %f\n", cities->dep[i], cities->name[i], cities->pop[i], cities->lon[i], cities->lat[i]);
   }
   return citiesDep;
+  */
+  return cities;   //juste pour pouvoir compiler
 }
