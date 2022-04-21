@@ -49,9 +49,9 @@ ListOfCities* citiesReader(int popMin){
       token = strtok(line, s);
       for(int i=0; i<1; i++) token = strtok(NULL, s);
       int myDep = atoi(token);
-      for(int i=0; i<2;  i++) token = strtok(NULL, s);
+      for(int i=0; i<4;  i++) token = strtok(NULL, s);
       strncpy(myName, token, 32);
-      for(int i=0; i<11; i++) token = strtok(NULL, s);
+      for(int i=0; i<9; i++) token = strtok(NULL, s);
       int myPop = atoi(token);
       for(int i=0; i<5;  i++) token = strtok(NULL, s);
       float myLon = atof(token);
@@ -82,7 +82,7 @@ ListOfCities* citiesReader(int popMin){
   outputFile = fopen("resuCities.dat", "w");
   if(outputFile != NULL){
     for(int i=0; i<cities->number; i++){
-      fprintf(outputFile, "%i %f %f\n", cities->pop[i], cities->lon[i], cities->lat[i]);
+      fprintf(outputFile, "%i %f %f %i\n", cities->pop[i], cities->lon[i], cities->lat[i], cities->dep[i]);
     }
     fclose(outputFile);
   }
