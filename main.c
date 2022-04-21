@@ -1,5 +1,5 @@
 // Compilation:
-//   icc -std=c99 main.c citiesReader.c
+//   icc -std=c99 main.c citiesReader.c citiesReader_maxbyDep.c citiesReader_myDep.c
 // Execution:
 //   ./a.out
 // Visualisation:
@@ -23,13 +23,13 @@
 #endif
 
 float distance(float v1lon,float v1lat, float v2lon, float v2lat){
-  
   return R*acosf(sinf(v1lat*(M_PI/180))*sinf(v2lat*(M_PI/180)) + cosf(v1lon*(M_PI/180) - v2lon*(M_PI/180))*cosf(v1lat*(M_PI/180))*cosf(v2lat*(M_PI/180)));
   /*
   float x = (v2lon - v1lon)*cosf((v1lat+v2lat)/2);
   float y = v1lat - v2lat;
   float z = sqrtf(powf(x,2) + powf(y,2));
-  return 1852* 60*z;*/
+  return 1852* 60*z;
+  */
 }
 
 
@@ -57,8 +57,7 @@ int main() {
   }
   else isDep=false;
 
-  ListOfCities* cities;
-  cities = citiesReader(popMin);
+  ;
 
   /*
   // ... just to check! This line can be removed.
@@ -71,12 +70,19 @@ int main() {
 //--- COMPUTING graph
 //-----------------------------------------------------------------
 
-
   int* voisin;
+  ListOfCities* cities;
+  int myDep = 63;
+
   if(isDep){
-    ListOfCities* citiesDep = maxbyDep(cities);
+    //cities = citiesReader_maxbyDep(popMin);              //réseau (1) pour l'instant
+    cities = citiesReader_myDep(popMin, myDep);          //pour tester avec le réseau (2)
+    voisin = Prim(cities);
   }
-  else voisin  = Prim(cities);
+  else{
+    cities = citiesReader(popMin);
+    voisin  = Prim(cities);
+  } 
 
 
 
@@ -118,7 +124,7 @@ int* Prim(ListOfCities* cities){
     dansS[i] = false;
     voisin[i] = 0;
     dist[i] = distance(cities->lon[0], cities->lat[0],cities->lon[i], cities->lat[i]);
-    printf("distance entre Nice et %s : %f km\n", cities->name[i], dist[i]);
+    printf("distance entre %s et %s : %f km, population : %i, département : %i\n",cities->name[0], cities->name[i], dist[i], cities->pop[i], cities->dep[i]);   //pour vérifier tout
   }
 
   // Itérations //
@@ -172,9 +178,9 @@ float network_size(ListOfCities* cities, int* voisin, int n){
 }
 
 
-
+//Je laisse pour l'instant au cas où
+/*
 ListOfCities* maxbyDep(ListOfCities* cities){
-  /*
   ListOfCities* citiesDep = malloc(95*sizeof(ListOfCities));
   int dep = cities->dep[0];
   citiesDep[0] = cities[0];
@@ -194,6 +200,5 @@ ListOfCities* maxbyDep(ListOfCities* cities){
     printf("%i %s %i %f %f\n", cities->dep[i], cities->name[i], cities->pop[i], cities->lon[i], cities->lat[i]);
   }
   return citiesDep;
-  */
-  return cities;   //juste pour pouvoir compiler
 }
+*/
