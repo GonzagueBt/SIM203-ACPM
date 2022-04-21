@@ -14,5 +14,7 @@ struct ListOfCities
 };
 
 ListOfCities* citiesReader(int popMin);
+ListOfCities* citiesReader_maxbyDep(int popMin);
+ListOfCities* citiesReader_myDep(int popMin, int dep);
 
 #endif
