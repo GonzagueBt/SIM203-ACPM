@@ -24,12 +24,6 @@
 
 float distance(float v1lon,float v1lat, float v2lon, float v2lat){
   return R*acosf(sinf(v1lat*(M_PI/180))*sinf(v2lat*(M_PI/180)) + cosf(v1lon*(M_PI/180) - v2lon*(M_PI/180))*cosf(v1lat*(M_PI/180))*cosf(v2lat*(M_PI/180)));
-  /*
-  float x = (v2lon - v1lon)*cosf((v1lat+v2lat)/2);
-  float y = v1lat - v2lat;
-  float z = sqrtf(powf(x,2) + powf(y,2));
-  return 1852* 60*z;
-  */
 }
 
 
@@ -48,12 +42,20 @@ int main() {
   printf("By Departement ?(yes=0/no=1) ");
   scanf("%i", &dep);
 
+  // Nettoyage des fichiers (dernière execution) pour ne pas avoir des incohérences ou erreurs de compilation
+  FILE* fileOut = NULL;
+  fileOut = fopen("resuGraph.dat", "w");
+  fclose(fileOut);
+  fileOut = fopen("resuGraphDep.dat", "w");
+  fclose(fileOut);
+  fileOut = fopen("resuCities.dat", "w");
+  fclose(fileOut);
+  fileOut = fopen("resuCitiesDep.dat", "w");
+  fclose(fileOut);
   if(dep==0){
     isDep=true;
     write = "a";
-    FILE* fileOut = NULL;
-    fileOut = fopen("resuGraph.dat", "w");
-    fclose(fileOut);
+    
   }
   else isDep=false;
 
@@ -72,16 +74,27 @@ int main() {
 
   int* voisin;
   ListOfCities* cities;
-  int myDep = 63;
-
+  float sizeNetwork = 0;
+  int index = 0;
   if(isDep){
-    //cities = citiesReader_maxbyDep(popMin);              //réseau (1) pour l'instant
-    cities = citiesReader_myDep(popMin, myDep);          //pour tester avec le réseau (2)
+    printf("Variante a poids minimal par d ́epartement\n");
+    cities = citiesReader_maxbyDep(popMin);              //réseau (1) pour l'instant
     voisin = Prim(cities);
+    citiesWriter(write, voisin, cities->number, index);
+    sizeNetwork = network_size(cities, voisin, cities->number);
+    for(int i=1; i<=95; i++){
+      cities = citiesReader_myDep(popMin, i);          //pour tester avec le réseau (2)
+      voisin = Prim(cities);
+      citiesWriterDep(write, voisin, cities->number, index);
+      index += cities->number;
+      sizeNetwork += network_size(cities, voisin, cities->number);
+    }
   }
   else{
     cities = citiesReader(popMin);
     voisin  = Prim(cities);
+    citiesWriter(write, voisin, cities->number, index);
+    sizeNetwork = network_size(cities, voisin, cities->number);
   } 
 
 
@@ -91,9 +104,7 @@ int main() {
   // !!! Vous devez modifier cette commande pour écrire le graphe obtenu avec Prim
 
 
-  citiesWriter(write, voisin, cities->number);
-
-  printf("taille du réseau : %f\n", network_size(cities, voisin, cities->number));
+  printf("taille du réseau : %f\n", sizeNetwork);
 
 //-----------------------------------------------------------------
 //--- DEALLOCATE arrays
@@ -124,7 +135,7 @@ int* Prim(ListOfCities* cities){
     dansS[i] = false;
     voisin[i] = 0;
     dist[i] = distance(cities->lon[0], cities->lat[0],cities->lon[i], cities->lat[i]);
-    printf("distance entre %s et %s : %f km, population : %i, département : %i\n",cities->name[0], cities->name[i], dist[i], cities->pop[i], cities->dep[i]);   //pour vérifier tout
+    //printf("distance entre %s et %s : %f km, population : %i, département : %i\n",cities->name[0], cities->name[i], dist[i], cities->pop[i], cities->dep[i]);   //pour vérifier tout
   }
 
   // Itérations //
@@ -154,14 +165,20 @@ int* Prim(ListOfCities* cities){
 }
 
 
-void citiesWriter(const char* write, int* voisin, int number){
+void citiesWriter(const char* write, int* voisin, int number, int index){
   FILE* fileOut = NULL;
   fileOut = fopen("resuGraph.dat", write);
   for(int i=1; i<number; i++){
-    fprintf(fileOut, "%i %i\n", i, voisin[i]);
-    /*for(int j=0; j<i; j++){
-      fprintf(fileOut, "%i %i\n", i, j);
-    }*/
+    fprintf(fileOut, "%i %i\n", (i+index), (voisin[i]+index));
+  }
+  fclose(fileOut);
+}
+
+void citiesWriterDep(const char* write, int* voisin, int number, int index){
+  FILE* fileOut = NULL;
+  fileOut = fopen("resuGraphDep.dat", write);
+  for(int i=1; i<number; i++){
+    fprintf(fileOut, "%i %i\n", (i+index), (voisin[i]+index));
   }
   fclose(fileOut);
 }
