@@ -18,7 +18,7 @@ ListOfCities* citiesReader_myDep(int popMin, int dep){
 //--- READING cities with population greater than or equal to 'popMin'
 //--------------------------------------------------------------------
 
-  printf("== Reading cities with population >= %i from 'citiesList.csv' ==\n", popMin);
+  //printf("== Reading cities with population >= %i from 'citiesList.csv' ==\n", popMin);
 
   FILE* inputFile = NULL;
   inputFile = fopen("citiesList.csv", "r");
@@ -69,6 +69,7 @@ ListOfCities* citiesReader_myDep(int popMin, int dep){
       if(myPop >= popMin && myDep == dep){
         cities->name[index] = (char*) malloc(32*sizeof(char));
         strncpy(cities->name[index], myName, 32);
+        printf("%s \n",myName);
         cities->pop[index] = myPop;
         cities->lon[index] = myLon;
         cities->lat[index] = myLat;
@@ -84,10 +85,10 @@ ListOfCities* citiesReader_myDep(int popMin, int dep){
 //--- WRITING cities with population greater than or equal to 'popMin'
 //--------------------------------------------------------------------
 
-  printf("== Writing cities with population >= %i in 'resuCities.dat' ==\n", popMin);
+  //printf("== Writing cities with population >= %i in 'resuCities.dat' ==\n", popMin);
 
   FILE* outputFile = NULL;
-  outputFile = fopen("resuCities.dat", "w");
+  outputFile = fopen("resuCitiesDep.dat", "a");
   if(outputFile != NULL){
     for(int i=0; i<cities->number; i++){
       fprintf(outputFile, "%i %f %f %i\n", cities->pop[i], cities->lon[i], cities->lat[i], cities->dep[i]);

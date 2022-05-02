@@ -91,6 +91,7 @@ ListOfCities* citiesReader_maxbyDep(int popMin){
             cities->lon[index] = myLon;
             cities->lat[index] = myLat;
             cities->dep[index] = myDep;
+            tab_index[myDep] = index;
             index++;
         }
         else{
@@ -116,7 +117,7 @@ ListOfCities* citiesReader_maxbyDep(int popMin){
   printf("== Writing cities with population >= %i in 'resuCities.dat' ==\n", popMin);
 
   FILE* outputFile = NULL;
-  outputFile = fopen("resuCities.dat", "w");
+  outputFile = fopen("resuCities.dat", "a");
   if(outputFile != NULL){
     for(int i=0; i<cities->number; i++){
       fprintf(outputFile, "%i %f %f %i\n", cities->pop[i], cities->lon[i], cities->lat[i], cities->dep[i]);
