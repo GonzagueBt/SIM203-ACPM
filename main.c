@@ -77,21 +77,22 @@ int main() {
   float sizeNetwork = 0;
   int index = 0;
   if(isDep){
-    printf("Variante a poids minimal par d ́epartement\n");
-    cities = citiesReader_maxbyDep(popMin);              //réseau (1) pour l'instant
+    printf("Variante a poids minimal par departement\n");
+    cities = citiesReader(popMin,1,0);              //réseau (1) pour l'instant
     voisin = Prim(cities);
     citiesWriter(write, voisin, cities->number, index);
     sizeNetwork = network_size(cities, voisin, cities->number);
     for(int i=1; i<=95; i++){
-      cities = citiesReader_myDep(popMin, i);          //pour tester avec le réseau (2)
+      cities = citiesReader(popMin, 2,i);          //pour tester avec le réseau (2)
       voisin = Prim(cities);
       citiesWriterDep(write, voisin, cities->number, index);
       index += cities->number;
       sizeNetwork += network_size(cities, voisin, cities->number);
+      printf("-- Departement %i : %i villes -- \n", i, cities->number);
     }
   }
   else{
-    cities = citiesReader(popMin);
+    cities = citiesReader(popMin,0,0);
     voisin  = Prim(cities);
     citiesWriter(write, voisin, cities->number, index);
     sizeNetwork = network_size(cities, voisin, cities->number);
@@ -193,29 +194,3 @@ float network_size(ListOfCities* cities, int* voisin, int n){
   }
   return S;
 }
-
-
-//Je laisse pour l'instant au cas où
-/*
-ListOfCities* maxbyDep(ListOfCities* cities){
-  ListOfCities* citiesDep = malloc(95*sizeof(ListOfCities));
-  int dep = cities->dep[0];
-  citiesDep[0] = cities[0];
-  int cpt = 0;
-  for(int i=0; i< cities->number; i++){
-    if(dep != cities->dep[i]){
-      dep = cities->dep[i];
-      citiesDep[cpt] = cities[i];
-      cpt++;
-      printf("%i\n",cpt);
-    }
-    else if(cities->pop[i]> citiesDep->pop[dep]){
-      citiesDep[cpt] = cities[i];
-    }
-  }
-  for(int i=0; i<95; i++){
-    printf("%i %s %i %f %f\n", cities->dep[i], cities->name[i], cities->pop[i], cities->lon[i], cities->lat[i]);
-  }
-  return citiesDep;
-}
-*/
