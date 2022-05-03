@@ -1,5 +1,5 @@
 // Compilation:
-//   icc -std=c99 main.c citiesReader.c citiesReader_maxbyDep.c citiesReader_myDep.c
+//   icc -std=c99 -qopenmp -mkl main.c citiesReader.c citiesReader_maxbyDep.c citiesReader_myDep.c
 // Execution:
 //   ./a.out
 // Visualisation:
@@ -13,6 +13,9 @@
 #include <math.h>
 #include <stdbool.h>
 #include <float.h>
+#include <time.h>
+#include <omp.h>
+#include <mkl.h>
 
 #ifndef R
   #define R 6378
@@ -59,8 +62,6 @@ int main() {
   }
   else isDep=false;
 
-  ;
-
   /*
   // ... just to check! This line can be removed.
   for(int i=0; i<cities->number; i++){
@@ -76,6 +77,9 @@ int main() {
   ListOfCities* cities;
   float sizeNetwork = 0;
   int index = 0;
+  int LOOP = 1;
+  // timing: start
+  const double timeBegin = dsecnd();
   if(isDep){
     printf("Variante a poids minimal par departement\n");
     cities = citiesReader(popMin,1,0);              //réseau (1) pour l'instant
@@ -96,17 +100,14 @@ int main() {
     voisin  = Prim(cities);
     citiesWriter(write, voisin, cities->number, index);
     sizeNetwork = network_size(cities, voisin, cities->number);
+    index = cities->number;
   } 
+  // timing: end
+  const double timeEnd = dsecnd();
 
-
-
-  // Écriture du graphe (chaque ligne correspond à une arête)
-  // !!! Ci-dessous, on écrit le graphe complet pour l'exemple
-  // !!! Vous devez modifier cette commande pour écrire le graphe obtenu avec Prim
-
-
+   double timeTotal = (double)(timeEnd-timeBegin)/LOOP;
   printf("taille du réseau : %f\n", sizeNetwork);
-
+  printf("Temps d'exécution pour %i villes : %f\n", index, timeTotal);
 //-----------------------------------------------------------------
 //--- DEALLOCATE arrays
 //-----------------------------------------------------------------
@@ -132,11 +133,11 @@ int* Prim(ListOfCities* cities){
 
   int sizeS = 1;
   // Initialisation //
+  //#pragma omp parallel
   for(int i=1; i<cities->number; i++){
     dansS[i] = false;
     voisin[i] = 0;
     dist[i] = distance(cities->lon[0], cities->lat[0],cities->lon[i], cities->lat[i]);
-    //printf("distance entre %s et %s : %f km, population : %i, département : %i\n",cities->name[0], cities->name[i], dist[i], cities->pop[i], cities->dep[i]);   //pour vérifier tout
   }
 
   // Itérations //
@@ -150,6 +151,7 @@ int* Prim(ListOfCities* cities){
       }
     }
     dansS[index] = true;
+    //#pragma omp parallel
     for(int j=0; j<cities->number; j++){
       if(j==index) continue;
       distM = distance(cities->lon[index], cities->lat[index], cities->lon[j], cities->lat[j]);
@@ -188,6 +190,7 @@ void citiesWriterDep(const char* write, int* voisin, int number, int index){
 float network_size(ListOfCities* cities, int* voisin, int n){
   float S=0.0;
   int v;
+  //#pragma omp parallel for reduction(+:S)
   for(int k=1; k<n; k++){
     v=voisin[k];
     S+=distance(cities->lon[k], cities->lat[k], cities->lon[v], cities->lat[v]);

@@ -13,7 +13,7 @@ if np.size(cities)>0 :
   pyplot.scatter(cities[:,1], cities[:,2], s=cities[:,0]/1000, c=cities[:,0], alpha=0.5);
   # draw the graph
   graph = loadtxt("resuGraph.dat", dtype=int)
-  print("Reseau plus grande ville de chaque departement : "+str(graph.shape[0]+1)+ " villes")
+  print(str(graph.shape[0]+1)+ " villes")
   for x in range(graph.shape[0]):
     edge = [graph[x,0], graph[x,1]]
     pyplot.plot(cities[edge,1], cities[edge,2], 'r')
@@ -27,6 +27,17 @@ if np.size(citiesDep)>0 :
   for x in range(graph.shape[0]):
     edge = [graph[x,0], graph[x,1]]
     pyplot.plot(citiesDep[edge,1], citiesDep[edge,2], 'b')
+
+# draw the cities
+cities = loadtxt("resuCities.dat", dtype=float, delimiter=" ")
+if np.size(cities)>0 :
+  pyplot.scatter(cities[:,1], cities[:,2], s=cities[:,0]/1000, c=cities[:,0], alpha=0.5);
+  # draw the graph
+  graph = loadtxt("resuGraph.dat", dtype=int)
+  print(str(graph.shape[0]+1)+ " villes")
+  for x in range(graph.shape[0]):
+    edge = [graph[x,0], graph[x,1]]
+    pyplot.plot(cities[edge,1], cities[edge,2], 'r')
 
 pyplot.xlabel('Longitude', size=16)
 pyplot.ylabel('Latitude', size=16)
