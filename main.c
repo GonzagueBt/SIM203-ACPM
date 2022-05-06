@@ -11,7 +11,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
-#include <stdbool.h>
 #include <float.h>
 #include <time.h>
 #include <omp.h>
@@ -80,14 +79,14 @@ int main() {
     if(isDep){                // Variante à poids minimal par Département
       cities = citiesReader(popMin,1,0);              //réseau (1)
       voisin = Prim(cities);
-      citiesWriter(write, voisin, cities->number, index);
+      citiesWriter(write, voisin, cities->number, index, false);
       //// inlined sans modification ////
       sizeNetwork = network_size(cities, voisin, cities->number);
       //// vectorisé sans modification ////
       for(int i=1; i<=95; i++){                       //réseau (2)
         cities = citiesReader(popMin, 2,i);          
         voisin = Prim(cities);
-        citiesWriterDep(write, voisin, cities->number, index);
+        citiesWriter(write, voisin, cities->number, index, true);
         index += cities->number;
         //// inlined sans modification ////
         sizeNetwork += network_size(cities, voisin, cities->number);
@@ -98,7 +97,7 @@ int main() {
       //// inlined sans modification ////
       voisin  = Prim(cities);
       //// vectorisé sans modification ////
-      citiesWriter(write, voisin, cities->number, index);
+      citiesWriter(write, voisin, cities->number, index, false);
       //// inlined sans modification ////
       sizeNetwork = network_size(cities, voisin, cities->number);
       index = cities->number;
@@ -177,9 +176,13 @@ int* Prim(ListOfCities* cities){
 }
 
 
-void citiesWriter(const char* write, int* voisin, int number, int index){
+void citiesWriter(const char* write, int* voisin, int number, int index, bool dep){
   FILE* fileOut = NULL;
-  fileOut = fopen("resuGraph.dat", write);
+  char* namefile = "resuGraph.dat";
+  if(dep){
+    namefile = "resuGraphDep.dat";
+  }
+  fileOut = fopen(namefile, write);
   for(int i=1; i<number; i++){
     fprintf(fileOut, "%i %i\n", (i+index), (voisin[i]+index));
   }
