@@ -6,7 +6,9 @@ matplotlib.use('Agg')
 from matplotlib import pyplot
 from numpy import loadtxt
 import numpy as np
+import time
 
+start = time.time()
 # draw the cities
 cities = loadtxt("resuCities.dat", dtype=float, delimiter=" ")
 if np.size(cities)>0 :
@@ -41,6 +43,8 @@ if np.size(cities)>0 :
 
 pyplot.xlabel('Longitude', size=16)
 pyplot.ylabel('Latitude', size=16)
+
+print("temps d'execution : "+ str(time.time()-start) + "s")
 
 # save in a PNG file
 pyplot.savefig('result.png')
