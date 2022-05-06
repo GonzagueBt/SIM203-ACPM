@@ -1,5 +1,5 @@
 // Compilation:
-//   icc -std=c99 -qopenmp -mkl main.c citiesReader.c citiesReader_maxbyDep.c citiesReader_myDep.c
+//   icc -std=c99 -qopenmp -mkl main.c citiesReader.c
 // Execution:
 //   ./a.out
 // Visualisation:
@@ -62,13 +62,6 @@ int main() {
   }
   else isDep=false;
 
-  /*
-  // ... just to check! This line can be removed.
-  for(int i=0; i<cities->number; i++){
-    printf("%i %s %i %f %f\n", cities->dep[i], cities->name[i], cities->pop[i], cities->lon[i], cities->lat[i]);
-  }
-  */
-
 //-----------------------------------------------------------------
 //--- COMPUTING graph
 //-----------------------------------------------------------------
@@ -77,31 +70,36 @@ int main() {
   ListOfCities* cities;
   float sizeNetwork = 0;
   int index = 0;
-  int LOOP = 20;
+  int LOOP = 1;
+
   // timing: start
   const double timeBegin = dsecnd();
 
   for(int t=0; t<LOOP; t++){
-    printf("LOOP num %i\n", t);
-    if(isDep){
-      printf("Variante a poids minimal par departement\n");
-      cities = citiesReader(popMin,1,0);              //réseau (1) pour l'instant
+    printf("LOOP %i\n", t);
+    if(isDep){                // Variante à poids minimal par Département
+      cities = citiesReader(popMin,1,0);              //réseau (1)
       voisin = Prim(cities);
       citiesWriter(write, voisin, cities->number, index);
+      //// inlined sans modification ////
       sizeNetwork = network_size(cities, voisin, cities->number);
-      for(int i=1; i<=95; i++){
-        cities = citiesReader(popMin, 2,i);          //pour tester avec le réseau (2)
+      //// vectorisé sans modification ////
+      for(int i=1; i<=95; i++){                       //réseau (2)
+        cities = citiesReader(popMin, 2,i);          
         voisin = Prim(cities);
         citiesWriterDep(write, voisin, cities->number, index);
         index += cities->number;
+        //// inlined sans modification ////
         sizeNetwork += network_size(cities, voisin, cities->number);
-        //printf("-- Departement %i : %i villes -- \n", i, cities->number);
       }
     }
-    else{
+    else{                   // Global 
       cities = citiesReader(popMin,0,0);
+      //// inlined sans modification ////
       voisin  = Prim(cities);
+      //// vectorisé sans modification ////
       citiesWriter(write, voisin, cities->number, index);
+      //// inlined sans modification ////
       sizeNetwork = network_size(cities, voisin, cities->number);
       index = cities->number;
     }
@@ -109,9 +107,15 @@ int main() {
   // timing: end
   const double timeEnd = dsecnd();
 
-   double timeTotal = (double)(timeEnd-timeBegin)/LOOP;
-  printf("taille du réseau : %f\n", sizeNetwork);
-  printf("Temps d'exécution pour %i villes : %f\n", index, timeTotal);
+  double timeTotal = (double)(timeEnd-timeBegin)/LOOP;
+  if(isDep){
+    printf("---- Version poids minimal par departements ----\n");
+  }else{
+    printf("---- Version classique ----\n");
+  }
+  printf("taille du réseau  : %f\n", sizeNetwork);
+  printf("Nombre de ville   : %i\n", index);
+  printf("Temps d'exécution : %f\n",timeTotal);
 //-----------------------------------------------------------------
 //--- DEALLOCATE arrays
 //-----------------------------------------------------------------
@@ -137,7 +141,7 @@ int* Prim(ListOfCities* cities){
 
   int sizeS = 1;
   // Initialisation //
-  #pragma omp parallel
+  //// vectorisé sans modification ////
   for(int i=1; i<cities->number; i++){
     dansS[i] = false;
     voisin[i] = 0;
@@ -148,6 +152,7 @@ int* Prim(ListOfCities* cities){
   while(sizeS < cities->number-1){
     int index;
     float distM = FLT_MAX;
+    //// unrolled sans modification ////
     for(int i=1; i<cities->number; i++){
       if(dansS[i]==false && dist[i]<distM){
         index = i;
@@ -155,7 +160,7 @@ int* Prim(ListOfCities* cities){
       }
     }
     dansS[index] = true;
-    #pragma omp parallel
+    //// vectorisé sans modification ////
     for(int j=0; j<cities->number; j++){
       if(j==index) continue;
       distM = distance(cities->lon[index], cities->lat[index], cities->lon[j], cities->lat[j]);
@@ -194,7 +199,7 @@ void citiesWriterDep(const char* write, int* voisin, int number, int index){
 float network_size(ListOfCities* cities, int* voisin, int n){
   float S=0.0;
   int v;
-  //#pragma omp parallel for reduction(+:S)
+  //// vectorisé sans modification ////
   for(int k=1; k<n; k++){
     v=voisin[k];
     S+=distance(cities->lon[k], cities->lat[k], cities->lon[v], cities->lat[v]);
