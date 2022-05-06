@@ -77,31 +77,35 @@ int main() {
   ListOfCities* cities;
   float sizeNetwork = 0;
   int index = 0;
-  int LOOP = 1;
+  int LOOP = 20;
   // timing: start
   const double timeBegin = dsecnd();
-  if(isDep){
-    printf("Variante a poids minimal par departement\n");
-    cities = citiesReader(popMin,1,0);              //réseau (1) pour l'instant
-    voisin = Prim(cities);
-    citiesWriter(write, voisin, cities->number, index);
-    sizeNetwork = network_size(cities, voisin, cities->number);
-    for(int i=1; i<=95; i++){
-      cities = citiesReader(popMin, 2,i);          //pour tester avec le réseau (2)
+
+  for(int t=0; t<LOOP; t++){
+    printf("LOOP num %i\n", t);
+    if(isDep){
+      printf("Variante a poids minimal par departement\n");
+      cities = citiesReader(popMin,1,0);              //réseau (1) pour l'instant
       voisin = Prim(cities);
-      citiesWriterDep(write, voisin, cities->number, index);
-      index += cities->number;
-      sizeNetwork += network_size(cities, voisin, cities->number);
-      printf("-- Departement %i : %i villes -- \n", i, cities->number);
+      citiesWriter(write, voisin, cities->number, index);
+      sizeNetwork = network_size(cities, voisin, cities->number);
+      for(int i=1; i<=95; i++){
+        cities = citiesReader(popMin, 2,i);          //pour tester avec le réseau (2)
+        voisin = Prim(cities);
+        citiesWriterDep(write, voisin, cities->number, index);
+        index += cities->number;
+        sizeNetwork += network_size(cities, voisin, cities->number);
+        //printf("-- Departement %i : %i villes -- \n", i, cities->number);
+      }
+    }
+    else{
+      cities = citiesReader(popMin,0,0);
+      voisin  = Prim(cities);
+      citiesWriter(write, voisin, cities->number, index);
+      sizeNetwork = network_size(cities, voisin, cities->number);
+      index = cities->number;
     }
   }
-  else{
-    cities = citiesReader(popMin,0,0);
-    voisin  = Prim(cities);
-    citiesWriter(write, voisin, cities->number, index);
-    sizeNetwork = network_size(cities, voisin, cities->number);
-    index = cities->number;
-  } 
   // timing: end
   const double timeEnd = dsecnd();
 
@@ -133,7 +137,7 @@ int* Prim(ListOfCities* cities){
 
   int sizeS = 1;
   // Initialisation //
-  //#pragma omp parallel
+  #pragma omp parallel
   for(int i=1; i<cities->number; i++){
     dansS[i] = false;
     voisin[i] = 0;
@@ -151,7 +155,7 @@ int* Prim(ListOfCities* cities){
       }
     }
     dansS[index] = true;
-    //#pragma omp parallel
+    #pragma omp parallel
     for(int j=0; j<cities->number; j++){
       if(j==index) continue;
       distM = distance(cities->lon[index], cities->lat[index], cities->lon[j], cities->lat[j]);
