@@ -119,7 +119,7 @@ int main() {
   }else{
     printf("---- Version classique ----\n");
   }
-  printf("taille du réseau  : %f villes\n", sizeNetwork);
+  printf("taille du réseau  : %f km\n", sizeNetwork);
   printf("Nombre de villes   : %i\n", index);
   printf("Temps d'exécution : %f s\n",timeTotal);
   printf("débit arithmétique : %f FLOP/s\n", debit1);
