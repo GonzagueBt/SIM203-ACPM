@@ -1,5 +1,6 @@
 // Compilation:
 //   icc -std=c99 -qopenmp -mkl main.c citiesReader.c
+//   icc -std=c99 -qopenmp -mkl -qopt-report=1 -qopt-report-annotate=html main.c citiesReader.c
 // Execution:
 //   ./a.out
 // Visualisation:
@@ -10,6 +11,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <stdbool.h>
 #include <math.h>
 #include <float.h>
 #include <time.h>
@@ -70,6 +72,7 @@ int main() {
   float sizeNetwork = 0;
   int index = 0;
   int LOOP = 1;
+  int FLOP = 0;
 
   // timing: start
   const double timeBegin = dsecnd();
@@ -83,6 +86,7 @@ int main() {
       //// inlined sans modification ////
       sizeNetwork = network_size(cities, voisin, cities->number);
       //// vectorisé sans modification ////
+      FLOP+=cities->number+2*pow(cities->number,2);
       for(int i=1; i<=95; i++){                       //réseau (2)
         cities = citiesReader(popMin, 2,i);          
         voisin = Prim(cities);
@@ -90,6 +94,7 @@ int main() {
         index += cities->number;
         //// inlined sans modification ////
         sizeNetwork += network_size(cities, voisin, cities->number);
+        FLOP += cities->number+2*pow(cities->number,2);
       }
     }
     else{                   // Global 
@@ -101,12 +106,15 @@ int main() {
       //// inlined sans modification ////
       sizeNetwork = network_size(cities, voisin, cities->number);
       index = cities->number;
+      FLOP+=cities->number+2*pow(cities->number,2);
     }
   }
   // timing: end
   const double timeEnd = dsecnd();
 
   double timeTotal = (double)(timeEnd-timeBegin)/LOOP;
+  double debit1 = FLOP/timeTotal;          //débit arithmétique
+  
   if(isDep){
     printf("---- Version poids minimal par departements ----\n");
   }else{
@@ -115,6 +123,7 @@ int main() {
   printf("taille du réseau  : %f\n", sizeNetwork);
   printf("Nombre de ville   : %i\n", index);
   printf("Temps d'exécution : %f\n",timeTotal);
+  printf("débit arithmétique : %f\n", debit1);
 //-----------------------------------------------------------------
 //--- DEALLOCATE arrays
 //-----------------------------------------------------------------
