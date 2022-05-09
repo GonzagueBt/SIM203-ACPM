@@ -119,10 +119,10 @@ int main() {
   }else{
     printf("---- Version classique ----\n");
   }
-  printf("taille du réseau  : %f\n", sizeNetwork);
-  printf("Nombre de ville   : %i\n", index);
-  printf("Temps d'exécution : %f\n",timeTotal);
-  printf("débit arithmétique : %f\n", debit1);
+  printf("taille du réseau  : %f villes\n", sizeNetwork);
+  printf("Nombre de villes   : %i\n", index);
+  printf("Temps d'exécution : %f s\n",timeTotal);
+  printf("débit arithmétique : %f FLOP/s\n", debit1);
 //-----------------------------------------------------------------
 //--- DEALLOCATE arrays
 //-----------------------------------------------------------------
